@@ -2009,7 +2009,6 @@ class ref{
             $this->fmt->text('hint', 'array');
             $this->fmt->sep(' ');
           }elseif(!empty($paramClass)){
-              echo $paramClass.PHP_EOL;
             $this->fmt->startContain('hint');
             $this->fromReflector($paramClass, $paramClass->name);
             $this->fmt->endContain();
