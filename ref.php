@@ -1776,7 +1776,7 @@ class ref{
     // class constants
     if($constants){
       $this->fmt->sectionTitle('Constants');
-      $max = max(array_map('static::strLen', array_keys($constants)));
+      $max = max(array_map(static::class.'::strLen', array_keys($constants)));
       foreach($constants as $name => $value){
         $meta = null;
         $type = array('const');
@@ -1998,21 +1998,22 @@ class ref{
           }
 
           try{
-            $paramClass = $parameter->getClass();
+              $paramClass = $parameter->getType() && !$parameter->getType()->isBuiltin()
+                  ? new ReflectionClass($parameter->getType()->getName())
+                  : null;
           }catch(\Exception $e){
             // @see https://bugs.php.net/bug.php?id=32177&edit=1
           }
 
-          if(!empty($paramClass)){
+          if($parameter->getType() && $parameter->getType()->getName() === 'array'){
+            $this->fmt->text('hint', 'array');
+            $this->fmt->sep(' ');
+          }elseif(!empty($paramClass)){
+              echo $paramClass.PHP_EOL;
             $this->fmt->startContain('hint');
             $this->fromReflector($paramClass, $paramClass->name);
             $this->fmt->endContain();
             $this->fmt->sep(' ');
-
-          }elseif($parameter->isArray()){
-            $this->fmt->text('hint', 'array');
-            $this->fmt->sep(' ');
-
           }else{
             $hasType = static::$env['is7'] && $parameter->hasType();
             if($hasType){
@@ -2790,7 +2791,8 @@ class RTextFormatter extends RFormatter{
 
     $lastIdx    = 0,
     $lastLineSt = 0,
-    $levelPad   = array(0);
+    $levelPad   = array(0),
+    $cache      = [];
 
 
 
