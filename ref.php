@@ -1998,14 +1998,16 @@ class ref{
           }
 
           try{
-              $paramClass = $parameter->getType() && !$parameter->getType()->isBuiltin()
+              $paramClass = $parameter->getType()
+                  && !$parameter->getType() instanceof ReflectionUnionType
+                  && !$parameter->getType()->isBuiltin()
                   ? new ReflectionClass($parameter->getType()->getName())
                   : null;
           }catch(\Exception $e){
             // @see https://bugs.php.net/bug.php?id=32177&edit=1
           }
 
-          if($parameter->getType() && $parameter->getType()->getName() === 'array'){
+          if($parameter->getType() && !$parameter->getType() instanceof ReflectionUnionType && $parameter->getType()->getName() === 'array'){
             $this->fmt->text('hint', 'array');
             $this->fmt->sep(' ');
           }elseif(!empty($paramClass)){
@@ -2752,7 +2754,7 @@ class RHtmlFormatter extends RFormatter{
    * @return  string|array
    */
   protected static function escape($var){
-    return is_array($var) ? array_map(static::class.'::escape', $var) : htmlspecialchars($var, ENT_QUOTES);
+    return is_array($var) ? array_map(static::class.'::escape', $var) : htmlspecialchars($var ?? '', ENT_QUOTES);
   }
 
 }
